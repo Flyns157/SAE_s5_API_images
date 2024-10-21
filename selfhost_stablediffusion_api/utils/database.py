@@ -20,10 +20,10 @@ class Database:
     
     def init_app(self, app:Flask)->None:
         self.app = app
-        self.neo4j_uri = app.NEO4J_URI
-        self.neo4j_user = app.NEO4J_USER
-        self.neo4j_password = app.NEO4J_PASSWORD
-        self.driver = GraphDatabase.driver(app.NEO4J_URI, auth=(app.NEO4J_USER, app.NEO4J_PASSWORD))
+        self.neo4j_uri = app.config['NEO4J_URI']
+        self.neo4j_user = app.config['NEO4J_USER']
+        self.neo4j_password = app.config['NEO4J_PASSWORD']
+        self.driver = GraphDatabase.driver(app.config['NEO4J_URI'], auth=(app.config['NEO4J_USER'], app.config['NEO4J_PASSWORD']))
 
     def create_user(self, username:str, password:str):
         hashed_password = self.hash_password(password)

@@ -2,13 +2,13 @@ from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from .config import Config
-from utils import Database
+from .utils import Database
 from flask import Flask
 import logging
 
 db = Database()
 
-class Server(Flask):
+class GenerationAPI(Flask):
     
     def __init__(self, *args, **kwargs):
         """
@@ -31,6 +31,9 @@ class Server(Flask):
         # Import and register blueprints
         from .auth import bp as auth_bp
         self.register_blueprint(auth_bp)
+        
+        from .api import bp as api_bp
+        self.register_blueprint(api_bp)
 
     def run(self, host: str = None, port: int = None, debug: bool = None, load_dotenv: bool = True, **options) -> None:
         self.limiter.init_app(self)

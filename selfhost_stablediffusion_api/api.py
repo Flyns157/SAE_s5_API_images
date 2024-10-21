@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-bp = Blueprint("api", __name__, url_prefix="/api")
+bp = Blueprint(name="gen_api", import_name=__name__, url_prefix="/api")
 
 @bp.route('/protected', methods=['GET'])
 @jwt_required()
