@@ -4,10 +4,14 @@ import random
 from PIL import Image  
 
 # charge model
-pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+if device == "cuda":
+    pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16)
+else:
+    pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4")
 
 # choose the GPU
-pipe = pipe.to("cuda")
+pipe = pipe.to(device)
 
 def txt2ImgPost(prompt, guidance_scale, num_inference_steps, negative_prompt):
     '''
@@ -20,7 +24,7 @@ def txt2ImgPost(prompt, guidance_scale, num_inference_steps, negative_prompt):
     negative_prompt (str) : object that you don't want
     '''
     seed = random.randint(1, 100)
-    generator = torch.Generator("cuda").manual_seed(seed)  
+    generator = torch.Generator(device).manual_seed(seed)  
     image = pipe(prompt, generator=generator, guidance_scale=guidance_scale, 
                  num_inference_steps=num_inference_steps, negative_prompt=negative_prompt).images[0]
     return image
@@ -52,7 +56,15 @@ def txt2ImgAvatar(picture, typePicture, descriptionPeople, descriptionAnimal, de
         prompt += f" by {artist}"
     
     seed = random.randint(1, 100)
-    generator = torch.Generator("cuda").manual_seed(seed) 
+    generator = torch.Generator(device).manual_seed(seed) 
     image = pipe(prompt, generator=generator).images[0]
     return image
 
+# Demander les inputs utilisateur
+prompt = str(input("Entrez votre création : "))
+guidance_scale = float(input("(Optionel) Ajoutez la précision du prompt : ").strip() or "7.5")
+num_inference_steps = int(input("(Optionel) Ajoutez la qualité de l'image : ").strip() or "50")
+negative_prompt = str(input("(Optionel) Ajoutez un élément à ne pas avoir sur l'image (negative_prompt) : "))
+
+# Générer et sauvegarder l'image
+txt2ImgPost(prompt, guidance_scale, num_inference_steps, negative_prompt)
