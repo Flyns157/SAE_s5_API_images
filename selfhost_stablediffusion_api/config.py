@@ -30,4 +30,5 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') if os.getenv('JWT_SECRET_KEY') and os.getenv('JWT_SECRET_KEY').lower() != 'auto' else secrets.token_hex(16)
     NEO4J_URI = os.getenv('NEO4J_URI') or 'bolt://localhost:7687'
     NEO4J_USER = os.getenv('NEO4J_USER') or 'neo4j'
-    NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD') if os.getenv('NEO4J_PASSWORD') and os.getenv('NEO4J_PASSWORD').lower() != 'auto' else secrets.token_hex(16)
+    NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD') or 'neo4j'
+    NEO4J_AUTH = os.getenv('NEO4J_USER')

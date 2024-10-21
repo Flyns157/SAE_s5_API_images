@@ -23,7 +23,7 @@ class Database:
         self.neo4j_uri = app.config['NEO4J_URI']
         self.neo4j_user = app.config['NEO4J_USER']
         self.neo4j_password = app.config['NEO4J_PASSWORD']
-        self.driver = GraphDatabase.driver(app.config['NEO4J_URI'], auth=(app.config['NEO4J_USER'], app.config['NEO4J_PASSWORD']))
+        self.driver = GraphDatabase.driver(app.config['NEO4J_URI'], auth=(app.config['NEO4J_USER'], app.config['NEO4J_PASSWORD']) if app.config['NEO4J_AUTH'] else None)
 
     def create_user(self, username:str, password:str):
         hashed_password = self.hash_password(password)
