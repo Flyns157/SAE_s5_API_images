@@ -1,28 +1,23 @@
 from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from neo4j import GraphDatabase
 import bcrypt
 
 app = Flask(__name__)
 
-# Configuration de la base de données PostgreSQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://flask_user:yourpassword@localhost/flask_auth'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'votre_cle_secrete'  # Clé secrète pour JWT
+# Configuration Neo4j
+NEO4J_URI = "bolt://localhost:7687"  # URI de votre serveur Neo4j
+NEO4J_USER = "neo4j"
+NEO4J_PASSWORD = "yourpassword"
 
-# Initialiser les extensions
-db = SQLAlchemy(app)
+# Connexion à la base de données Neo4j
+driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+
+# JWT secret key
+app.config['JWT_SECRET_KEY'] = 'votre_cle_secrete'  # Changez cette valeur pour plus de sécurité
+
+# Initialiser le JWTManager avec l'application Flask
 jwt = JWTManager(app)
-
-# Modèle pour la table des utilisateurs
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-
-    def __repr__(self):
-        return f'<User {self.username}>'
 
 # Fonction utilitaire pour hacher les mots de passe
 def hash_password(password):
@@ -32,7 +27,21 @@ def hash_password(password):
 def check_password(password, hashed):
     return bcrypt.checkpw(password.encode('utf-8'), hashed)
 
-# Route pour créer un nouvel utilisateur (pour initialisation)
+# Création d'un nouvel utilisateur dans Neo4j
+def create_user(username, password):
+    hashed_password = hash_password(password)
+    query = "CREATE (u:User {username: $username, password: $password})"
+    with driver.session() as session:
+        session.run(query, username=username, password=hashed_password.decode('utf-8'))
+
+# Recherche d'un utilisateur par nom dans Neo4j
+def find_user_by_username(username):
+    query = "MATCH (u:User {username: $username}) RETURN u.username AS username, u.password AS password"
+    with driver.session() as session:
+        result = session.run(query, username=username)
+        return result.single()
+
+# Route pour créer un nouvel utilisateur
 @app.route('/register', methods=['POST'])
 def register():
     username = request.json.get('username', None)
@@ -42,15 +51,11 @@ def register():
         return jsonify({"msg": "Nom d'utilisateur et mot de passe requis"}), 400
 
     # Vérifier si l'utilisateur existe déjà
-    if User.query.filter_by(username=username).first():
+    if find_user_by_username(username):
         return jsonify({"msg": "Utilisateur déjà existant"}), 400
 
-    # Hacher le mot de passe et créer un nouvel utilisateur
-    hashed_password = hash_password(password)
-    new_user = User(username=username, password=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
-
+    # Créer un nouvel utilisateur dans Neo4j
+    create_user(username, password)
     return jsonify({"msg": f"Utilisateur {username} créé avec succès"}), 201
 
 # Route pour se connecter et obtenir un token
@@ -59,10 +64,10 @@ def login():
     username = request.json.get('username', None)
     password = request.json.get('password', None)
 
-    # Récupérer l'utilisateur dans la base de données
-    user = User.query.filter_by(username=username).first()
+    # Récupérer l'utilisateur dans Neo4j
+    user = find_user_by_username(username)
 
-    if not user or not check_password(password, user.password):
+    if not user or not check_password(password, user["password"].encode('utf-8')):
         return jsonify({"msg": "Mauvais identifiants"}), 401
 
     # Créer un token JWT pour l'utilisateur
@@ -70,15 +75,7 @@ def login():
     return jsonify(access_token=access_token)
 
 # Route protégée nécessitant un token JWT
-@app.route('/protected', methods=['GET'])
-@jwt_required()
-def protected():
-    # Récupérer l'identité de l'utilisateur à partir du token
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
+
 
 if __name__ == '__main__':
-    # Créer toutes les tables dans la base de données
-    with app.app_context():
-        db.create_all()  # Création des tables si elles n'existent pas
     app.run(debug=True)
