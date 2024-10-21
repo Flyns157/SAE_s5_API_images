@@ -1,0 +1,3 @@
+[submodule "selfhost_stablediffusion_api/utils/PowerPaint"]
+	path = selfhost_stablediffusion_api/utils/PowerPaint
+	url = https://github.com/open-mmlab/PowerPaint.git
