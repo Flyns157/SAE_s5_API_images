@@ -6,7 +6,7 @@ from .utils import Database
 from flask import Flask
 import logging
 
-db = Database()
+db = Database(Config().NO_AUTH)
 
 class GenerationAPI(Flask):
     

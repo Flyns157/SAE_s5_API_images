@@ -32,3 +32,4 @@ class Config:
     NEO4J_USER = os.getenv('NEO4J_USER') or 'neo4j'
     NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD') or 'neo4j'
     NEO4J_AUTH = os.getenv('NEO4J_USER')
+    NO_AUTH = bool(os.getenv('NO_AUTH'))
