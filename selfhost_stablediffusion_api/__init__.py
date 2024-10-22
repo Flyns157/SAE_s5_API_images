@@ -1,14 +1,16 @@
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
+from .utils import Database, Utils
 from flask_limiter import Limiter
 from .config import Config
-from .utils import Database
 from flask import Flask
 import logging
+import weakref
 
 db = Database(Config().NO_AUTH)
 
 class GenerationAPI(Flask):
+    _pipeline_weakrefs = {}
     
     def __init__(self, *args, **kwargs):
         """
@@ -32,8 +34,9 @@ class GenerationAPI(Flask):
         from .auth import bp as auth_bp
         self.register_blueprint(auth_bp)
         
-        from .api import bp as api_bp
-        self.register_blueprint(api_bp)
+        from .api import example_bp, txt2img_bp
+        self.register_blueprint(example_bp)
+        self.register_blueprint(txt2img_bp)
 
     def run(self, host: str = None, port: int = None, debug: bool = None, load_dotenv: bool = True, **options) -> None:
         self.limiter.init_app(self)
@@ -41,3 +44,11 @@ class GenerationAPI(Flask):
         self.jwt.init_app(self)
 
         return super().run(host, port, debug, load_dotenv, **options)
+
+    @classmethod
+    def get_pipeline(cls, model_name):
+        pipe = cls._pipeline_weakrefs() if cls._pipeline_weakrefs.get(model_name, None) else None
+        if pipe is None:
+            pipe = Utils.load_SD_pipe(name=model_name, )
+            cls._pipeline_weakrefs[model_name] = weakref.ref(pipe)
+        return pipe

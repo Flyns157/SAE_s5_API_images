@@ -6,7 +6,8 @@ from utils import Utils
 
 class Txt2Img:
 
-    def txt2ImgPost(prompt:str, guidance_scale:float, num_inference_steps:int, negative_prompt:str|list[str], pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
+    @staticmethod
+    def txt2img_post(prompt:str, guidance_scale:float, num_inference_steps:int, negative_prompt:str|list[str], pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgPost (function) : create a post image
 
@@ -21,26 +22,27 @@ class Txt2Img:
         image = pipe(prompt, generator=generator, guidance_scale=guidance_scale, num_inference_steps=num_inference_steps, negative_prompt=negative_prompt).images[0]
         return image
 
-    def txt2ImgAvatar(picture:Image, typePicture:"people"|"animal"|"background", descriptionPeople:str, descriptionAnimal:str, descriptionBackground:str, artist:str, pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
+    @staticmethod
+    def txt2img_avatar(picture:Image, picture_type:"people"|"animal"|"background", people_description:str, animal_description:str, background_description:str, artist:str, pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgAvatar (function) : create a avatar image
         
         parameters : 
         picture (str) : picture or painting image
-        typePicture (str) : People Animal or Background picture
-        descriptionPeople (list) : all infos on the person
-        descriptionAnimal (list) : all infos on the animal
-        descriptionBackground (str) : background prompt
+        picture_type (str) : People Animal or Background picture
+        people_description (list) : all infos on the person
+        animal_description (list) : all infos on the animal
+        background_description (str) : background prompt
         artist (str) : an artist for the creation
         '''
         prompt = ""
-        match typePicture:
+        match picture_type:
             case "people":
-                prompt = f"A {descriptionPeople[0]} {descriptionPeople[1]} with {descriptionPeople[2]} hair, {descriptionPeople[3]} {descriptionPeople[4]} eyes, {descriptionPeople[5]}, {descriptionPeople[6]}, {descriptionPeople[7]}"
+                prompt = f"A {people_description[0]} {people_description[1]} with {people_description[2]} hair, {people_description[3]} {people_description[4]} eyes, {people_description[5]}, {people_description[6]}, {people_description[7]}"
             case "animal":
-                prompt = f"A {descriptionAnimal[0]} {descriptionAnimal[1]}"
+                prompt = f"A {animal_description[0]} {animal_description[1]}"
             case "background":
-                prompt = descriptionBackground
+                prompt = background_description
             case _:
                 pass
         
