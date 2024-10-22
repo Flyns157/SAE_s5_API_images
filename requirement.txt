@@ -3,3 +3,5 @@ ftfy
 accelerate
 transformers
 mmengine
+torch
+controlnet-aux
