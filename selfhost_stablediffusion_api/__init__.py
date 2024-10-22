@@ -1,3 +1,4 @@
+from diffusers import StableDiffusionPipeline, DiffusionPipeline
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 from .utils import Database, Utils
@@ -34,9 +35,10 @@ class GenerationAPI(Flask):
         from .auth import bp as auth_bp
         self.register_blueprint(auth_bp)
         
-        from .api import example_bp, txt2img_bp
+        from .api import example_bp, txt2img_bp, img2img_bp
         self.register_blueprint(example_bp)
         self.register_blueprint(txt2img_bp)
+        self.register_blueprint(img2img_bp)
 
     def run(self, host: str = None, port: int = None, debug: bool = None, load_dotenv: bool = True, **options) -> None:
         self.limiter.init_app(self)
@@ -46,9 +48,9 @@ class GenerationAPI(Flask):
         return super().run(host, port, debug, load_dotenv, **options)
 
     @classmethod
-    def get_pipeline(cls, model_name):
+    def get_pipeline(cls, model_name:str, loader:DiffusionPipeline = StableDiffusionPipeline)->DiffusionPipeline:
         pipe = cls._pipeline_weakrefs() if cls._pipeline_weakrefs.get(model_name, None) else None
         if pipe is None:
-            pipe = Utils.load_SD_pipe(name=model_name, )
+            pipe = Utils.load_pipe(model_name=model_name, loader=loader)
             cls._pipeline_weakrefs[model_name] = weakref.ref(pipe)
         return pipe

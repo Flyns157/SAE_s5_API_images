@@ -7,7 +7,7 @@ from utils import Utils
 class Txt2Img:
 
     @staticmethod
-    def txt2img_post(prompt:str, guidance_scale:float, num_inference_steps:int, negative_prompt:str|list[str], pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
+    def txt2img_post(prompt:str, guidance_scale:float = 0.7, num_inference_steps:int = 50, negative_prompt:str|list[str] = '', pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgPost (function) : create a post image
 
@@ -43,19 +43,17 @@ class Txt2Img:
                 prompt = f"A {animal_description[0]} {animal_description[1]}"
             case "background":
                 prompt = background_description
-            case _:
-                pass
         
         if picture == "painting":
             prompt += f" by {artist}"
         
         seed = random.randint(1, 100)
-        generator = torch.Generator(Utils.get_divice()).manual_seed(seed) 
+        generator = torch.Generator(Utils.get_divice()).manual_seed(seed)
         image = pipe(prompt, generator=generator).images[0]
         return image
 
     @staticmethod
-    def test():
+    def test()->Image:
         # Demander les inputs utilisateur
         prompt = str(input("Entrez votre création : "))
         guidance_scale = float(input("(Optionel) Ajoutez la précision du prompt : ").strip() or "7.5")
@@ -63,4 +61,4 @@ class Txt2Img:
         negative_prompt = str(input("(Optionel) Ajoutez un élément à ne pas avoir sur l'image (negative_prompt) : "))
 
         # Générer et sauvegarder l'image
-        Txt2Img.txt2ImgPost(prompt, guidance_scale, num_inference_steps, negative_prompt)
+        return Txt2Img.txt2img_post(prompt, guidance_scale, num_inference_steps, negative_prompt)
