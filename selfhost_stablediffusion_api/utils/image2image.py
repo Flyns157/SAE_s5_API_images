@@ -73,7 +73,8 @@ result_image = img2img_pipe(
     prompt="An avatar of a man. Add a sword in his hand",
     image=init_image, 
     generator=generator,
-    strength=1, # Between 0 and 1 (1 for maximum changes)
+    strength=1, # Between 0 and 1 (1 for maximum changes),
+    num_inference_steps=50, # Defaults to 50 for good results
 ).images[0]
 
 # Save the output image
