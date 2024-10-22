@@ -1,10 +1,10 @@
-from selfhost_stablediffusion_api import Server
+from selfhost_stablediffusion_api import GenerationAPI
 import argparse
 import sys
 
 # =================================== Main ===================================
 def main(debug=False, host='0.0.0.0', port=8080):
-    app = Server(__name__,
+    app = GenerationAPI(__name__,
                 static_url_path='',
                 static_folder='assets',
                 template_folder='templates')
