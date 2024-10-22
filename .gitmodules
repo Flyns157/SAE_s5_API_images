@@ -1,3 +1,6 @@
-[submodule "selfhost_stablediffusion_api/utils/PowerPaint"]
-	path = selfhost_stablediffusion_api/utils/PowerPaint
+[submodule "selfhost_stablediffusion_api/utils/content/PowerPaint"]
+	path = selfhost_stablediffusion_api/utils/content/PowerPaint
 	url = https://github.com/open-mmlab/PowerPaint.git
+[submodule "content/checkpoints/PowerPaint_v2"]
+	path = content/checkpoints/PowerPaint_v2
+	url = https://huggingface.co/JunhaoZhuang/PowerPaint_v2/
