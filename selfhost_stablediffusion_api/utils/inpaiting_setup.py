@@ -6,24 +6,30 @@ import PIL
 sys.path.insert(0, os.path.join(os.getcwd(), "content/PowerPaint"))
 print(os.path.join(os.getcwd(), "content/PowerPaint"))
 
-from safetensors.torch import load_model, save_model
-import cv2
+from safetensors.torch import load_model
 import numpy as np
-import torch
 from PIL import Image, ImageOps
-from transformers import CLIPTextModel, CLIPTokenizer
-from diffusers.utils import load_image
-from diffusers import DPMSolverMultistepScheduler
+from transformers import CLIPTextModel
 
 from powerpaint.models.BrushNet_CA import BrushNetModel
 from powerpaint.pipelines.pipeline_PowerPaint_Brushnet_CA import (
     StableDiffusionPowerPaintBrushNetPipeline,
 )
 
-#from powerpaint.power_paint_tokenizer import PowerPaintTokenizer
 from powerpaint.models.unet_2d_condition import UNet2DConditionModel
 from powerpaint.utils.utils import TokenizerWrapper, add_tokens
 from diffusers import UniPCMultistepScheduler
+
+from diffusers import StableDiffusionInpaintPipeline
+
+from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
+
+processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
+model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
+
+import torch
+import matplotlib.pyplot as plt
+import cv2
 
 checkpoint_dir = "/content/checkpoints"
 local_files_only = True
@@ -90,6 +96,7 @@ pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 pipe.enable_model_cpu_offload()
 pipe = pipe.to("cpu")
 
+
 def task_to_prompt(control_type):
     if control_type == "object-removal":
         promptA = "P_ctxt"
@@ -119,16 +126,17 @@ def task_to_prompt(control_type):
 
     return promptA, promptB, negative_promptA, negative_promptB
 
+
 @torch.inference_mode()
 def predict(
-    pipe,
-    input_image,
-    prompt,
-    fitting_degree,
-    ddim_steps,
-    scale,
-    negative_prompt,
-    task,
+        pipe,
+        input_image,
+        prompt,
+        fitting_degree,
+        ddim_steps,
+        scale,
+        negative_prompt,
+        task,
 ):
     promptA, promptB, negative_promptA, negative_promptB = task_to_prompt(task)
     print(task, promptA, promptB, negative_promptA, negative_promptB)
@@ -166,24 +174,28 @@ def predict(
     return result
 
 
-def object_removal_with_instruct_inpainting(pipe, init_image, mask_image, negative_prompt, fitting_degree=1, \
-                                          num_inference_steps=50, guidance_scale=12):
-    negative_prompt = negative_prompt + ", out of frame, lowres, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, disfigured, gross proportions, malformed limbs, watermark, signature"
+def object_removal_with_instruct_inpainting(pipe, init_image, mask_image, negative_prompt, fitting_degree=1,
+                                            num_inference_steps=50, guidance_scale=12):
+    negative_prompt = negative_prompt + (", out of frame, lowres, error, cropped, worst quality, low quality, "
+                                         "jpeg artifacts, ugly, duplicate, morbid, mutilated, out of frame, mutation, "
+                                         "deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, "
+                                         "disfigured, gross proportions, malformed limbs, watermark, signature")
     input_image = {"image": init_image, "mask": mask_image}
     image = predict(
         pipe,
         input_image,
-        "empty scene blur", # prompt
+        "empty scene blur",  # prompt
         fitting_degree,
         num_inference_steps,
         guidance_scale,
         negative_prompt,
-        "object-removal" # task
+        "object-removal"  # task
     )
     return image
 
-def object_addition_with_instruct_inpainting(pipe, init_image, mask_image, prompt, fitting_degree=1, \
-                                          num_inference_steps=50, guidance_scale=12):
+
+def object_addition_with_instruct_inpainting(pipe, init_image, mask_image, prompt, fitting_degree=1,
+                                             num_inference_steps=50, guidance_scale=12):
     input_image = {"image": init_image, "mask": mask_image}
     image = predict(
         pipe,
@@ -192,7 +204,60 @@ def object_addition_with_instruct_inpainting(pipe, init_image, mask_image, promp
         fitting_degree,
         num_inference_steps,
         guidance_scale,
-        "", # negative prompt
-        "text-guided" # task
+        "",  # negative prompt
+        "text-guided"  # task
     )
     return image
+
+
+device = (
+    "mps"
+    if torch.backends.mps.is_available()
+    else "cuda"
+    if torch.cuda.is_available()
+    else "cpu"
+)
+
+inpaiting_pipe = StableDiffusionInpaintPipeline.from_pretrained("stabilityai/stable-diffusion-2-inpainting")
+inpaiting_pipe = inpaiting_pipe.to(device)
+
+
+def local_modification_inpaiting(prompt, init_image, mask_image):
+    return inpaiting_pipe(prompt=prompt, image=init_image, mask_image=mask_image).images[0]
+
+
+def generate_mask_image(init_image, mask_prompt, debug=False):
+    temp_fpath = f"temp.png"
+    if isinstance(mask_prompt, str):
+        mask_prompt = [mask_prompt, mask_prompt]
+    if isinstance(mask_prompt, list) and len(mask_prompt) == 1:
+        mask_prompt = mask_prompt * 2
+    inputs = processor(text=mask_prompt, images=[init_image] * len(mask_prompt), padding="max_length",
+                       return_tensors="pt")
+
+    # predict
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    preds = outputs.logits.unsqueeze(1)
+
+    # visualize prediction
+    if debug:
+        _, ax = plt.subplots(1, 5, figsize=(15, len(mask_prompt) + 1))
+        [a.axis('off') for a in ax.flatten()]
+        ax[0].imshow(init_image)
+        print(torch.sigmoid(preds[0][0]).shape)
+        [ax[i + 1].imshow(torch.sigmoid(preds[i][0])) for i in range(len(mask_prompt))]
+        [ax[i + 1].text(0, -15, mask_prompt[i]) for i in range(len(mask_prompt))]
+
+    plt.imsave(temp_fpath, torch.sigmoid(preds[1][0]))
+    img2 = cv2.imread(temp_fpath)
+    gray_image = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+    (thresh, bw_image) = cv2.threshold(gray_image, 100, 255, cv2.THRESH_BINARY)
+
+    # fix color format
+    cv2.cvtColor(bw_image, cv2.COLOR_BGR2RGB)
+
+    mask_image = PIL.Image.fromarray(bw_image)
+    return mask_image
