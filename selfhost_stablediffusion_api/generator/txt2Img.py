@@ -2,12 +2,12 @@ import torch
 from diffusers import StableDiffusionPipeline
 import random
 from PIL import Image  
-from utils import Utils
+from ..utils import Utils
 
 class Txt2Img:
 
     @staticmethod
-    def txt2img_post(prompt:str, guidance_scale:float = 0.7, num_inference_steps:int = 50, negative_prompt:str|list[str] = '', pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
+    def txt2img_post(prompt:str, guidance_scale:float = 0.7, num_inference_steps:int = 50, negative_prompt:str|list[str] = '', pipe:StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgPost (function) : create a post image
 
@@ -23,7 +23,7 @@ class Txt2Img:
         return image
 
     @staticmethod
-    def txt2img_avatar(picture:Image, picture_type:"people"|"animal"|"background", people_description:str, animal_description:str, background_description:str, artist:str, pipe:StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
+    def txt2img_avatar(picture:Image, picture_type:["people", "animal", "background"], people_description:str, animal_description:str, background_description:str, artist:str, pipe:StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgAvatar (function) : create a avatar image
         
