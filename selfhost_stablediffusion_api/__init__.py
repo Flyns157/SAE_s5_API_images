@@ -48,9 +48,9 @@ class GenerationAPI(Flask):
         return super().run(host, port, debug, load_dotenv, **options)
 
     @classmethod
-    def get_pipeline(cls, model_name:str, loader:DiffusionPipeline = StableDiffusionPipeline)->DiffusionPipeline:
+    def get_pipeline(cls, model_name:str, loader:DiffusionPipeline = StableDiffusionPipeline, **kwargs)->DiffusionPipeline:
         pipe = cls._pipeline_weakrefs() if cls._pipeline_weakrefs.get(model_name, None) else None
         if pipe is None:
-            pipe = Utils.load_pipe(model_name=model_name, loader=loader)
+            pipe = Utils.load_pipe(model_name=model_name, loader=loader,  **kwargs)
             cls._pipeline_weakrefs[model_name] = weakref.ref(pipe)
         return pipe

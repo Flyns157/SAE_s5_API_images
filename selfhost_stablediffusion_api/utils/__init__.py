@@ -36,12 +36,12 @@ class Utils:
         return divice
 
     @staticmethod
-    def load_pipe(model_name:str, loader:str = StableDiffusionPipeline)->DiffusionPipeline:
+    def load_pipe(model_name:str, loader:str = StableDiffusionPipeline, **kwargs)->DiffusionPipeline:
         '''
         Charge a Stable-Diffusion model in a pipeline
         '''
         device = Utils.get_divice()
         if device == "cuda":
-            return loader.from_pretrained(model_name, torch_dtype=torch.float16).to(device)
+            return loader.from_pretrained(model_name, torch_dtype=torch.float16, **kwargs).to(device)
         else:
-            return loader.from_pretrained(model_name).to(device)
+            return loader.from_pretrained(model_name, **kwargs).to(device)
