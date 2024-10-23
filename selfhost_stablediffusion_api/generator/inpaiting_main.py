@@ -1,3 +1,5 @@
+import PIL.Image
+
 from inpaiting_setup import *
 
 
@@ -20,9 +22,8 @@ class Inpaiting :
 
     @staticmethod
     def test():
-        #ouvrir l'image avec le code de la fonction download image
-        init_image = ""
-        mask_image = ""
+        init_image = PIL.Image.open("./resources/dog.png")
+        mask_image = PIL.Image.open("./resources/dog_mask.png")
         prompt = "Make the dog bigger"
         strategy = 1
 
