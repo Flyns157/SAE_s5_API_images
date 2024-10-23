@@ -9,7 +9,8 @@ class Inpaiting :
             mask_image = generate_mask_image(init_image=init_image, mask_prompt=[prompt])
         match strategy:
             case 1:
-                return local_editing_inpaiting(prompt=prompt, init_image=init_image, mask_image=mask_image)
+                return object_addition_with_instruct_inpainting(pipe=pipe,prompt=prompt, init_image=init_image,
+                                                                mask_image=mask_image)
             case 2:
                 return object_removal_with_instruct_inpainting(pipe=pipe, init_image=init_image, mask_image=mask_image,
                                                                negative_prompt=prompt)

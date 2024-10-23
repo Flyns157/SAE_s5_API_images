@@ -19,8 +19,6 @@ from powerpaint.models.unet_2d_condition import UNet2DConditionModel
 from powerpaint.utils.utils import TokenizerWrapper, add_tokens
 from diffusers import UniPCMultistepScheduler
 
-from diffusers import StableDiffusionInpaintPipeline
-
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 
 processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
@@ -216,14 +214,6 @@ device = (
     if torch.cuda.is_available()
     else "cpu"
 )
-
-inpaiting_pipe = StableDiffusionInpaintPipeline.from_pretrained("stabilityai/stable-diffusion-2-inpainting")
-inpaiting_pipe = inpaiting_pipe.to(device)
-
-
-def local_editing_inpaiting(prompt, init_image, mask_image):
-    return inpaiting_pipe(prompt=prompt, image=init_image, mask_image=mask_image).images[0]
-
 
 def generate_mask_image(init_image, mask_prompt, debug=False):
     temp_fpath = f"temp.png"
