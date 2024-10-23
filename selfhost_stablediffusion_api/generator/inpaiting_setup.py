@@ -3,8 +3,7 @@ import os
 
 import PIL
 
-sys.path.insert(0, os.path.join(os.getcwd(), "content/PowerPaint"))
-print(os.path.join(os.getcwd(), "content/PowerPaint"))
+sys.path.insert(0, os.path.join(os.getcwd(), "../generator/content/PowerPaint"))
 
 from safetensors.torch import load_model
 import numpy as np
@@ -222,7 +221,7 @@ inpaiting_pipe = StableDiffusionInpaintPipeline.from_pretrained("stabilityai/sta
 inpaiting_pipe = inpaiting_pipe.to(device)
 
 
-def local_modification_inpaiting(prompt, init_image, mask_image):
+def local_editing_inpaiting(prompt, init_image, mask_image):
     return inpaiting_pipe(prompt=prompt, image=init_image, mask_image=mask_image).images[0]
 
 
