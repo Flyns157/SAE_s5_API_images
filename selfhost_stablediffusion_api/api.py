@@ -81,7 +81,7 @@ def generate_txt2img():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@txt2img_bp.route('/txt2img/avatar', methods=['POST'])
+@txt2img_bp.route('/avatar', methods=['POST'])
 def generate_avatar():
     try:
         data = request.json
