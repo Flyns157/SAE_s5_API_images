@@ -40,7 +40,7 @@ class Txt2Img:
         else:
             prompt_parts.append(f"a portrait ")
 
-        # Vraag 2: what subject do you want? (person, animale, landscape)
+        # Question 2: what subject do you want? (person, animale, landscape)
             subject = input(
                 "What subject do you want? (person, animal, landscape) ").strip().lower()
 
@@ -107,5 +107,5 @@ class Txt2Img:
             "(Optionel) Ajoutez un élément à ne pas avoir sur l'image (negative_prompt) : "))
 
         # Générer et sauvegarder l'image
-        Txt2Img.txt2ImgPost(prompt, guidance_scale,
-                            num_inference_steps, negative_prompt)
+        Txt2Img.txt2img_post(prompt, guidance_scale,
+                             num_inference_steps, negative_prompt)
