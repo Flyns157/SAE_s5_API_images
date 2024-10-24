@@ -39,10 +39,10 @@ def process_image_route():
         
         # mise en cache de l'image (buffer)
         img_io = io.BytesIO()
-        processed_image.save(img_io, format='JPEG')
+        processed_image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
         return f"Error processing image: {str(e)}", 500
@@ -105,13 +105,51 @@ def generate_avatar():
 
         # Sauvegarder l'image dans un buffer en mémoire
         img_io = io.BytesIO()
-        image.save(img_io, format='JPEG')
+        image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+#  ================================================================================================================================================
+
+from .generator import Inpainting
+
+inpainting_bp = Blueprint(name="inpainting_api", import_name=__name__, url_prefix="/inpainting")
+
+@inpainting_bp.route('/inpainting', methods=['POST'])
+def inpainting():
+    try:
+        data = request.json
+        strategy = int(data['strategy'])
+        prompt = data['prompt']
+        init_image = data['init_image']
+        mask_image = data.get('mask_image', None)
+        
+        # Retrieve input images
+        init_image_file = request.files['image']
+        init_image = Image.open(init_image_file)
+        mask_image_file = request.files.get('mask_image', None)
+        mask_image = Image.open(init_image_file) if mask_image_file else None
+        
+        # Call the inpainting_choice function
+        image = Inpainting.inpainting_choice(strategy=strategy,
+                                                prompt=prompt,
+                                                init_image=init_image,
+                                                mask_image=mask_image,
+                                                )
+        
+        # Sauvegarder l'image dans un buffer en mémoire
+        img_io = io.BytesIO()
+        image.save(img_io, format='PNG')
+        img_io.seek(0)
+
+        return send_file(img_io, mimetype='image/png')
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 #  ================================================================================================================================================
 
