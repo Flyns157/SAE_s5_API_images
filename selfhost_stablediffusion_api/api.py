@@ -38,10 +38,10 @@ def process_image_route():
         
         # mise en cache de l'image (buffer)
         img_io = io.BytesIO()
-        processed_image.save(img_io, format='JPEG')
+        processed_image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
         return f"Error processing image: {str(e)}", 500
@@ -53,7 +53,7 @@ def process_image_route():
 
 txt2img_bp = Blueprint(name="txt-img_api", import_name=__name__, url_prefix="/txt2img")
 
-from generator import Txt2Img
+from .generator import Txt2Img
 
 @txt2img_bp.route('/post', methods=['POST'])
 def generate_txt2img():
@@ -70,15 +70,15 @@ def generate_txt2img():
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             negative_prompt=negative_prompt,
-            pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
+            # pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
         )
 
         # Sauvegarder l'image dans un buffer en mémoire
         img_io = io.BytesIO()
-        image.save(img_io, format='JPEG')
+        image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -102,15 +102,15 @@ def generate_avatar():
             descriptionAnimal=animal_description,
             descriptionBackground=background_description,
             artist=artist,
-            pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
+            # pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
         )
 
         # Sauvegarder l'image dans un buffer en mémoire
         img_io = io.BytesIO()
-        image.save(img_io, format='JPEG')
+        image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
