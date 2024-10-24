@@ -1,0 +1,17 @@
+diffusers==0.30.0
+ftfy
+accelerate
+transformers
+mmengine
+torch
+controlnet-aux
+opencv-python
+matplotlib
+safetensors
+mmengine
+Flask
+Flask-Limiter
+Flask-JWT-Extended
+neo4j
+bcrypt
+python-dotenv
