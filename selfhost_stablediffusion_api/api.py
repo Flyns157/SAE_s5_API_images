@@ -68,15 +68,15 @@ def generate_txt2img():
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             negative_prompt=negative_prompt,
-            pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
+            # pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
         )
 
         # Sauvegarder l'image dans un buffer en mémoire
         img_io = io.BytesIO()
-        image.save(img_io, format='JPEG')
+        image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
+        return send_file(img_io, mimetype='image/png')
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -86,21 +86,21 @@ def generate_avatar():
     try:
         data = request.json
         picture = data['picture']
-        picture_type = data['typePicture']
-        people_description = data.get('descriptionPeople', ["", "", "", "", "", "", "", ""])
-        animal_description = data.get('descriptionAnimal', ["", ""])
-        background_description = data.get('descriptionBackground', "")
+        picture_type = data['picture_type']
+        people_description = data.get('people_description', ["", "", "", "", "", "", "", ""])
+        animal_description = data.get('animal_description', ["", ""])
+        background_description = data.get('background_description', "")
         artist = data.get('artist', "")
 
         # Utilisation de la méthode Txt2Img.txt2ImgAvatar
         image = Txt2Img.txt2img_avatar(
             picture=picture,
-            typePicture=picture_type,
-            descriptionPeople=people_description,
-            descriptionAnimal=animal_description,
-            descriptionBackground=background_description,
+            picture_type=picture_type,
+            people_description=people_description,
+            animal_description=animal_description,
+            background_description=background_description,
             artist=artist,
-            pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
+            #pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
         )
 
         # Sauvegarder l'image dans un buffer en mémoire
