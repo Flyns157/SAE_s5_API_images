@@ -3,8 +3,8 @@ from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 from .utils import Database, Utils
 from flask_limiter import Limiter
+from flask import Flask, jsonify
 from .config import Config
-from flask import Flask
 import logging
 import weakref
 
@@ -39,6 +39,14 @@ class GenerationAPI(Flask):
         self.register_blueprint(example_bp)
         self.register_blueprint(txt2img_bp)
         self.register_blueprint(img2img_bp)
+        
+        
+        @self.route('/health', methods=['GET'])
+        def health_check():
+            return jsonify({
+                'status': 'healthy',
+                'models_loaded': dict(GenerationAPI._pipeline_weakrefs)
+            })
 
     def run(self, host: str = None, port: int = None, debug: bool = None, load_dotenv: bool = True, **options) -> None:
         self.limiter.init_app(self)

@@ -1,10 +1,13 @@
 from diffusers import StableDiffusionImg2ImgPipeline, StableDiffusionPipeline, DiffusionPipeline
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, jsonify, request, send_file
+from werkzeug.utils import secure_filename
 from . import GenerationAPI
 from PIL import Image
 import logging
+import base64
 import io
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -218,3 +221,103 @@ def generate_img2img():
         return jsonify({'error': str(e)}), 400
 
 #  ================================================================================================================================================
+
+fine_inpainting_bp = Blueprint(name="fine-inpainting_api", import_name=__name__, url_prefix="/fine-inpainting")
+
+from .generator import FineInpainting
+
+# Configure upload settings
+UPLOAD_FOLDER = 'temp_uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Ensure upload directory exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_base64_image(base64_string, save_path):
+    if ',' in base64_string:
+        base64_string = base64_string.split(',')[1]
+    image_data = base64.b64decode(base64_string)
+    with open(save_path, 'wb') as f:
+        f.write(image_data)
+    return save_path
+
+def image_to_base64(image):
+    if isinstance(image, Image.Image):
+        buffered = io.BytesIO()
+        image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        return f"data:image/png;base64,{img_str}"
+    return None
+
+@fine_inpainting_bp.route('', methods=['POST'])
+def process_image():
+    try:
+        # Validate request data
+        if not request.is_json:
+            return jsonify({'error': 'Request must be JSON'}), 400
+        
+        data = request.json
+        required_fields = ['training_images', 'train_prompt_instance', 'class_prompt', 'input_image', 'user_prompt']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Create temporary directory for this request
+        request_dir = os.path.join(UPLOAD_FOLDER, secure_filename(str(os.urandom(8).hex())))
+        os.makedirs(request_dir, exist_ok=True)
+
+        try:
+            # Save training images
+            training_paths = []
+            for i, img_data in enumerate(data['training_images']):
+                training_path = os.path.join(request_dir, f'training_{i}.png')
+                save_base64_image(img_data, training_path)
+                training_paths.append(training_path)
+
+            # Save input image
+            input_path = os.path.join(request_dir, 'input.png')
+            save_base64_image(data['input_image'], input_path)
+
+            # Save mask if provided
+            mask_path = None
+            if 'user_mask' in data and data['user_mask']:
+                mask_path = os.path.join(request_dir, 'mask.png')
+                save_base64_image(data['user_mask'], mask_path)
+
+            # Process the image
+            result_image = FineInpainting().process_image(
+                tab_train_image=training_paths,
+                train_prompt_instance=data['train_prompt_instance'],
+                class_prompt=data['class_prompt'],
+                init_image=input_path,
+                user_prompt=data['user_prompt'],
+                user_mask=mask_path,
+                strength=data.get('strength', 0.6)
+            )
+            
+            if not result_image:
+                return jsonify({'error': 'Failed to process image'}), 500
+            
+            # Save the image in a memory buffer
+            img_io = io.BytesIO()
+            result_image.save(img_io, format='PNG')
+            img_io.seek(0)
+            
+            return send_file(img_io, mimetype='image/png')
+
+        finally:
+            # Clean up temporary files
+            import shutil
+            shutil.rmtree(request_dir, ignore_errors=True)
+
+    except Exception as e:
+        import traceback
+        return jsonify({
+            'error': 'Internal server error',
+            'details': str(e),
+            'traceback': traceback.format_exc()
+        }), 500

@@ -1,5 +1,6 @@
 from diffusers import StableDiffusionPipeline, DiffusionPipeline
 from PIL import Image
+import requests
 import string
 import random
 import base64
@@ -63,3 +64,8 @@ class Utils:
         image.save(buffered, format="PNG")
         image_b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
         return image_b64
+
+    @classmethod
+    def download_image(cls, url):
+        response = requests.get(url)
+        return Image.open(io.BytesIO(response.content)).convert("RGB")
