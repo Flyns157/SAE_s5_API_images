@@ -81,29 +81,60 @@ def generate_txt2img():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @txt2img_bp.route('/avatar', methods=['POST'])
 def generate_avatar():
     try:
+        # Extract data from request JSON
         data = request.json
-        picture = data['picture']
-        picture_type = data['picture_type']
-        people_description = data.get('people_description', ["", "", "", "", "", "", "", ""])
-        animal_description = data.get('animal_description', ["", ""])
-        background_description = data.get('background_description', "")
-        artist = data.get('artist', "")
-
-        # Utilisation de la méthode Txt2Img.txt2ImgAvatar
+        
+        # Extract all parameters, using defaults for missing ones
+        image_type = data.get('image_type', 'picture')
+        style = data.get('style', None)
+        subject = data.get('subject', None)
+        gender = data.get('gender', None)
+        hair_color = data.get('hair_color', None)
+        hair_length = data.get('hair_length', None)
+        haircut = data.get('haircut', None)
+        nationality = data.get('nationality', None)
+        eye_color = data.get('eye_color', None)
+        animal = data.get('animal', None)
+        body_color = data.get('body_color', None)
+        height = data.get('height', None)
+        environment = data.get('environment', None)
+        fav_color = data.get('fav_color', None)
+        fav_sport = data.get('fav_sport', None)
+        fav_animal = data.get('fav_animal', None)
+        fav_song = data.get('fav_song', None)
+        fav_dish = data.get('fav_dish', None)
+        fav_job = data.get('fav_job', None)
+        fav_hero = data.get('fav_hero', None)
+        
+        # Generate avatar using the txt2img_avatar function
         image = Txt2Img.txt2img_avatar(
-            picture=picture,
-            picture_type=picture_type,
-            people_description=people_description,
-            animal_description=animal_description,
-            background_description=background_description,
-            artist=artist,
+            image_type=image_type,
+            style=style,
+            subject=subject,
+            gender=gender,
+            hair_color=hair_color,
+            hair_length=hair_length,
+            haircut=haircut,
+            nationality=nationality,
+            eye_color=eye_color,
+            animal=animal,
+            body_color=body_color,
+            height=height,
+            environment=environment,
+            fav_color=fav_color,
+            fav_sport=fav_sport,
+            fav_animal=fav_animal,
+            fav_song=fav_song,
+            fav_dish=fav_dish,
+            fav_job=fav_job,
+            fav_hero=fav_hero,
             #pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
         )
 
-        # Sauvegarder l'image dans un buffer en mémoire
         img_io = io.BytesIO()
         image.save(img_io, format='PNG')
         img_io.seek(0)
@@ -178,12 +209,12 @@ def generate_img2img():
 
         # Save the image in a memory buffer
         img_io = io.BytesIO()
-        output_image.save(img_io, format='JPEG')
+        output_image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/jpeg')
-
+        return send_file(img_io, mimetype='image/png')
+    
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 400
 
 #  ================================================================================================================================================
