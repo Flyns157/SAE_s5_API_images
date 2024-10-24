@@ -1,4 +1,4 @@
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline, DiffusionPipeline
 import string
 import random
 import torch
@@ -28,15 +28,20 @@ class Utils:
     
     @staticmethod
     def get_divice()->str:
-        return "cuda" if torch.cuda.is_available() else "cpu"
+        divice = 'cpu'
+        if torch.cuda.is_available():
+            divice = 'cuda'
+        elif torch.backends.mps.is_available():
+            divice = 'mps'
+        return divice
 
     @staticmethod
-    def load_SD_pipe(name:str)->StableDiffusionPipeline:
+    def load_pipe(model_name:str, loader:str = StableDiffusionPipeline, **kwargs)->DiffusionPipeline:
         '''
         Charge a Stable-Diffusion model in a pipeline
         '''
         device = Utils.get_divice()
         if device == "cuda":
-            return StableDiffusionPipeline.from_pretrained(name, torch_dtype=torch.float16).to(device)
+            return loader.from_pretrained(model_name, torch_dtype=torch.float16, **kwargs).to(device)
         else:
-            return StableDiffusionPipeline.from_pretrained(name).to(device)
+            return loader.from_pretrained(model_name, **kwargs).to(device)

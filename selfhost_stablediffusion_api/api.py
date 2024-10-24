@@ -1,3 +1,4 @@
+from diffusers import StableDiffusionImg2ImgPipeline, StableDiffusionPipeline, DiffusionPipeline
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, jsonify, request, send_file
 from . import GenerationAPI
@@ -46,10 +47,7 @@ def process_image_route():
     except Exception as e:
         return f"Error processing image: {str(e)}", 500
 
-
-
-
-
+#  ================================================================================================================================================
 
 txt2img_bp = Blueprint(name="txt-img_api", import_name=__name__, url_prefix="/txt2img")
 
@@ -83,7 +81,7 @@ def generate_txt2img():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@txt2img_bp.route('/txt2img/avatar', methods=['POST'])
+@txt2img_bp.route('/avatar', methods=['POST'])
 def generate_avatar():
     try:
         data = request.json
@@ -115,6 +113,7 @@ def generate_avatar():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+#  ================================================================================================================================================
 
 from .generator import Inpainting
 
@@ -151,3 +150,40 @@ def inpainting():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+#  ================================================================================================================================================
+
+img2img_bp = Blueprint(name="img-img_api", import_name=__name__, url_prefix="/img2img")
+
+from .generator import Img2Img
+
+@img2img_bp.route('', methods=['POST'])
+def generate_img2img():
+    try:
+        # Retrieving data from the query
+        prompt = request.form['prompt']
+        strength = float(request.form.get('strength', 0.75))
+        num_inference_steps = int(request.form.get('num_inference_steps', 50))
+
+        # Récupérer l'image d'entrée
+        init_image_file = request.files['image']
+        init_image = Image.open(init_image_file)
+
+        # Load the img2img pipeline using the img2img method
+        output_image = Img2Img.img2img(prompt=prompt,
+                                        init_image=init_image,
+                                        strength=strength,
+                                        num_inference_steps=num_inference_steps,
+                                        pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4", loader=StableDiffusionImg2ImgPipeline))
+
+        # Save the image in a memory buffer
+        img_io = io.BytesIO()
+        output_image.save(img_io, format='JPEG')
+        img_io.seek(0)
+
+        return send_file(img_io, mimetype='image/jpeg')
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+#  ================================================================================================================================================

@@ -12,3 +12,6 @@ mmengine
 Flask
 Flask-Limiter
 Flask-JWT-Extended
+neo4j
+bcrypt
+python-dotenv
