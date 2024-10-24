@@ -1,9 +1,6 @@
 import PIL.Image
 
-from inpaiting_setup import *
-
-
-class Inpaiting :
+class Inpainting:
 
     @staticmethod
     def inpaiting_choice(strategy, prompt, init_image, mask_image=None):
