@@ -2,7 +2,7 @@ import torch
 from diffusers import StableDiffusionPipeline
 import random
 from PIL import Image  
-from utils import Utils
+from ..utils import Utils
 
 class Txt2Img:
 
