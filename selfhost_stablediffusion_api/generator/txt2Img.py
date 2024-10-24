@@ -1,6 +1,7 @@
 import torch
 from diffusers import StableDiffusionPipeline
 import random
+from peft import get_lora_model, LoraConfig, TaskType
 from PIL import Image  
 from ..utils import Utils
 
@@ -103,4 +104,4 @@ class Txt2Img:
             "(Optionel) Ajoutez un élément à ne pas avoir sur l'image (negative_prompt) : "))
 
         # Générer et sauvegarder l'image
-        return Txt2Img.txt2img_post(prompt, guidance_scale, num_inference_steps, negative_prompt)
+        return Txt2Img.txt2ImgPost(prompt, guidance_scale, num_inference_steps, negative_prompt)
