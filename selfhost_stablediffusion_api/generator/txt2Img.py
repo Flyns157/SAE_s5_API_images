@@ -26,13 +26,14 @@ class Txt2Img:
         return image
 
     @staticmethod
-    def txt2img_avatar(pipe: StableDiffusionPipeline, image_type: str, style: str = None, 
+    def txt2img_avatar(image_type: str, style: str = None, 
                         subject: str = None, gender: str = None, hair_color: str = None, 
                         hair_length: str = None, haircut: str = None, nationality: str = None, 
                         eye_color: str = None, animal: str = None, body_color: str = None, 
                         height: str = None, environment: str = None, fav_color: str = None, 
                         fav_sport: str = None, fav_animal: str = None, fav_song: str = None, 
-                        fav_dish: str = None, fav_job: str = None, fav_hero: str = None, **kwargs):
+                        fav_dish: str = None, fav_job: str = None, fav_hero: str = None,
+                        pipe: StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4"), **kwargs):
         """
         Generates an image based on user responses to specific questions.
 
