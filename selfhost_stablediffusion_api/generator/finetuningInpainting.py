@@ -1,59 +1,45 @@
 import subprocess
 import os
 from PIL import Image
-import numpy as np
 import torch
 import random
 import matplotlib.pyplot as plt
-import PIL
-from io import BytesIO
-import requests
 from transformers import AutoProcessor, Kosmos2ForConditionalGeneration, CLIPSegProcessor, CLIPSegForImageSegmentation
 from diffusers import StableDiffusionInpaintPipeline
 import cv2
+import io
+import base64
 
+from ..utils import Utils
 
-device = (
-    "mps"
-    if torch.backends.mps.is_available()
-    else "cuda"
-    if torch.cuda.is_available()
-    else "cpu"
-)
+device = Utils.get_divice()
 
-# We'll use a couple of demo images later in the notebook
-def download_image(url):
-    response = requests.get(url)
-    return PIL.Image.open(BytesIO(response.content)).convert("RGB")
-
+processor2 = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
+model2 = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
 
 def image_grid(imgs, rows, cols):
     assert len(imgs) == rows*cols
 
     w, h = imgs[0].size
-    grid = PIL.Image.new('RGB', size=(cols*w, rows*h))
+    grid = Image.new('RGB', size=(cols*w, rows*h))
     grid_w, grid_h = grid.size
 
     for i, img in enumerate(imgs):
         grid.paste(img, box=(i%cols*w, i//cols*h))
     return grid
 
-
-processor2 = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
-model2 = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
-
-# 'mask_prompt' must have at least 2 keywords
-def generate_mask_image(init_image, mask_prompt, out_fpath, debug=False):
+def generate_mask_image(init_image, mask_prompt, out_fpath:str = None, debug=False):
+    ''''mask_prompt' must have at least 2 keywords'''
     temp_fpath = f"temp.png"
     if isinstance(mask_prompt, str):
-      mask_prompt = [mask_prompt, mask_prompt]
+        mask_prompt = [mask_prompt, mask_prompt]
     if isinstance(mask_prompt, list) and len(mask_prompt) == 1:
       mask_prompt = mask_prompt * 2
     inputs = processor2(text=mask_prompt, images=[init_image] * len(mask_prompt), padding="max_length", return_tensors="pt")
 
     # predict
     with torch.no_grad():
-      outputs = model2(**inputs)
+        outputs = model2(**inputs)
 
     preds = outputs.logits.unsqueeze(1)
 
@@ -75,8 +61,8 @@ def generate_mask_image(init_image, mask_prompt, out_fpath, debug=False):
     # fix color format
     cv2.cvtColor(bw_image, cv2.COLOR_BGR2RGB)
 
-    mask_image = PIL.Image.fromarray(bw_image)
-    mask_image.save(out_fpath)
+    mask_image = Image.fromarray(bw_image)
+    if out_fpath: mask_image.save(out_fpath)
     return mask_image
 
 
@@ -114,14 +100,18 @@ def process_image(tab_train_image, train_prompt_instance, class_prompt, init_ima
             image_bytes = base64.b64decode(image_data)
             img = Image.open(io.BytesIO(image_bytes))
         else:
-            # Si l'image n'est pas en base64, chargez-la directement
+            # Si l'image n'est pas en base64, chargez-la directement dale dale zelda dale passamo la trifuierza que tengo hambre 
             img = Image.open(image_data)
 
         # Sauvegarder l'image dans le dossier
         img_save_path = os.path.join(save_dir, f"{i}.jpeg")
         img.save(img_save_path)
 
-    !accelerate launch train_dreambooth_inpaint.py \
+
+    import subprocess
+
+    # Commande Bash que vous souhaitez exécuter
+    commande = """accelerate launch train_dreambooth_inpaint.py \
         --pretrained_model_name_or_path=$MODEL_NAME  \
         --instance_data_dir=$INSTANCE_DIR \
         --class_data_dir=$CLASS_DIR \
@@ -139,7 +129,17 @@ def process_image(tab_train_image, train_prompt_instance, class_prompt, init_ima
         --num_class_images=200 \
         --max_train_steps=400 \
         --train_text_encoder \
-        --checkpointing_steps=4000
+        --checkpointing_steps=4000"""
+
+    # Exécution de la commande
+    process = subprocess.Popen(commande, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # Récupération de la sortie et des erreurs
+    stdout, stderr = process.communicate()
+
+    # Affichage de la sortie et des erreurs
+    print("Sortie:", stdout.decode())
+    print("Erreurs:", stderr.decode())
 
     pipeline = StableDiffusionInpaintPipeline.from_pretrained(
             "/content/dreambooth_inpainting_out",

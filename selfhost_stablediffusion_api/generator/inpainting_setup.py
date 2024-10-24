@@ -18,7 +18,7 @@ from powerpaint.models.unet_2d_condition import UNet2DConditionModel
 from powerpaint.utils.utils import TokenizerWrapper, add_tokens
 
 # Ensure the correct path for importing local modules
-sys.path.insert(0, os.path.join(os.getcwd(), "../generator/content/PowerPaint"))
+sys.path.insert(0, os.path.join(os.getcwd(), "../generator/PowerPaint"))
 
 # Constants and configurations
 CHECKPOINT_DIR = "/content/checkpoints"
