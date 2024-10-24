@@ -1,8 +1,8 @@
 import torch
 from diffusers import StableDiffusionPipeline
 import random
-from PIL import Image
-from utils import Utils
+from PIL import Image  
+from ..utils import Utils
 
 
 class Txt2Img:
@@ -33,7 +33,7 @@ class Txt2Img:
                         height: str = None, environment: str = None, fav_color: str = None, 
                         fav_sport: str = None, fav_animal: str = None, fav_song: str = None, 
                         fav_dish: str = None, fav_job: str = None, fav_hero: str = None,
-                        pipe: StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4"), **kwargs):
+                        pipe: StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4"), **kwargs):
         """
         Generates an image based on user responses to specific questions.
 
@@ -76,11 +76,9 @@ class Txt2Img:
         if subject == "person":
             prompt_parts.append(
                 f"of a {nationality} {gender} person with {eye_color} eyes and {hair_length}, {hair_color} hair (haircut: {haircut}).")
-        
         elif subject == "animal":
             prompt_parts.append(
                 f"of a {height} {body_color} {animal} in a {environment}")
-        
         elif subject == "landscape":
             prompt_parts.append(
                 f"of a landscape with a {fav_color} theme, featuring {fav_sport}, a {fav_animal}, inspired by {fav_song}, and elements of {fav_dish}, {fav_job}, and {fav_hero}")
@@ -90,12 +88,11 @@ class Txt2Img:
         print(f"Generated prompt: {prompt}")
 
         # Generate image
-        image = pipe(prompt, num_inference_steps=50, generator=generator).images[0]
-
-        return image
+        images = pipe(prompt, num_inference_steps=50, generator=generator).images
+        return image[0]
 
     @staticmethod
-    def test():
+    def test()->Image:
         # Demander les inputs utilisateur
         prompt = str(input("Entrez votre création : "))
         guidance_scale = float(
@@ -106,5 +103,4 @@ class Txt2Img:
             "(Optionel) Ajoutez un élément à ne pas avoir sur l'image (negative_prompt) : "))
 
         # Générer et sauvegarder l'image
-        Txt2Img.txt2img_post(prompt, guidance_scale,
-                             num_inference_steps, negative_prompt)
+        return Txt2Img.txt2img_post(prompt, guidance_scale, num_inference_steps, negative_prompt)
