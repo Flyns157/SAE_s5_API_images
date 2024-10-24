@@ -1,5 +1,5 @@
 import PIL.Image
-from inpaiting_setup import generate_mask_image, object_addition_with_instruct_inpainting, object_removal_with_instruct_inpainting, pipe
+from selfhost_stablediffusion_api.generator.inpainting_setup import generate_mask_image, object_addition_with_instruct_inpainting, object_removal_with_instruct_inpainting, pipe
 
 class Inpainting:
 
