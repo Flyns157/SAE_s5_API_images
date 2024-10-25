@@ -1,7 +1,7 @@
 import torch
 from diffusers import StableDiffusionPipeline
 import random
-from peft import get_lora_model, LoraConfig, TaskType
+from peft import LoraConfig, TaskType
 from PIL import Image  
 from ..utils import Utils
 
@@ -9,7 +9,7 @@ from ..utils import Utils
 class Txt2Img:
 
     @staticmethod
-    def txt2img_post(prompt: str, guidance_scale: float, num_inference_steps: int, negative_prompt: str | list[str], pipe: StableDiffusionPipeline = Utils.load_SD_pipe(name="CompVis/stable-diffusion-v1-4")):
+    def txt2img_post(prompt: str, guidance_scale: float, num_inference_steps: int, negative_prompt: str | list[str], pipe: StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgPost (function) : create a post image
 

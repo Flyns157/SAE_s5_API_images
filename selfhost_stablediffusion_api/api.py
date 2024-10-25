@@ -149,7 +149,7 @@ def generate_avatar():
 
 #  ================================================================================================================================================
 
-from .generator import Inpainting
+# from .generator import Inpainting
 
 inpainting_bp = Blueprint(name="inpainting_api", import_name=__name__, url_prefix="/inpainting")
 
@@ -169,11 +169,11 @@ def inpainting():
         mask_image = Image.open(init_image_file) if mask_image_file else None
         
         # Call the inpainting_choice function
-        image = Inpainting.inpainting_choice(strategy=strategy,
-                                                prompt=prompt,
-                                                init_image=init_image,
-                                                mask_image=mask_image,
-                                                )
+        image = Image.new('RGB', (512, 512))# Inpainting.inpainting_choice(strategy=strategy,
+        #                                         prompt=prompt,
+        #                                         init_image=init_image,
+        #                                         mask_image=mask_image,
+        #                                         )
         
         # Sauvegarder l'image dans un buffer en mémoire
         img_io = io.BytesIO()
@@ -208,7 +208,8 @@ def generate_img2img():
                                         init_image=init_image,
                                         strength=strength,
                                         num_inference_steps=num_inference_steps,
-                                        pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4", loader=StableDiffusionImg2ImgPipeline))
+                                        # pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4", loader=StableDiffusionImg2ImgPipeline)
+                                        )
 
         # Save the image in a memory buffer
         img_io = io.BytesIO()
