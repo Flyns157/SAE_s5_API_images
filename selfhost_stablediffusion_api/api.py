@@ -58,31 +58,32 @@ from .generator import Txt2Img
 
 @txt2img_bp.route('/post', methods=['POST'])
 def generate_txt2img():
-    try:
-        data = request.json
-        prompt = data['prompt']
-        guidance_scale = float(data.get('guidance_scale', 7.5))
-        num_inference_steps = int(data.get('num_inference_steps', 50))
-        negative_prompt = data.get('negative_prompt', "")
+    #try:
+    data = request.json
+    prompt = data['prompt']
+    guidance_scale = float(data.get('guidance_scale', 7.5))
+    num_inference_steps = int(data.get('num_inference_steps', 50))
+    negative_prompt = data.get('negative_prompt', "")
 
         # Utilisation de la méthode Txt2Img.txt2ImgPost
-        image = Txt2Img.txt2img_post(
-            prompt=prompt,
-            guidance_scale=guidance_scale,
-            num_inference_steps=num_inference_steps,
-            negative_prompt=negative_prompt,
-            # pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
-        )
+    image = Txt2Img.txt2img_post(
+        prompt=prompt,
+        guidance_scale=guidance_scale,
+        num_inference_steps=num_inference_steps,
+        negative_prompt=negative_prompt,
+        # pipe=GenerationAPI.get_pipeline(model_name="CompVis/stable-diffusion-v1-4")
+    )
 
-        # Sauvegarder l'image dans un buffer en mémoire
-        img_io = io.BytesIO()
-        image.save(img_io, format='PNG')
-        img_io.seek(0)
+    # Sauvegarder l'image dans un buffer en mémoire
+    img_io = io.BytesIO()
+    image.save(img_io, format='PNG')
+    img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/png')
+    img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+    return img_base64
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    #except Exception as e:
+        #return jsonify({'error': str(e)}), 500
 
 
 @txt2img_bp.route('/avatar', methods=['POST'])
