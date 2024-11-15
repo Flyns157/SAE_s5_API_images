@@ -87,7 +87,7 @@ def generate_txt2img():
 
 @txt2img_bp.route('/avatar', methods=['POST'])
 def generate_avatar():
-    try:
+    # try:
         # Extract data from request JSON
         data = request.json
         
@@ -142,10 +142,11 @@ def generate_avatar():
         image.save(img_io, format='PNG')
         img_io.seek(0)
 
-        return send_file(img_io, mimetype='image/png')
+        img_base64 = base64.b64encode(img_io.getvalue()).decode('utf-8')
+        return img_base64
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # except Exception as e:
+    #     return jsonify({'error': str(e)}), 500
 
 #  ================================================================================================================================================
 

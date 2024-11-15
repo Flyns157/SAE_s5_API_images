@@ -64,7 +64,7 @@ class Txt2Img:
         - An image generated based on the given prompt.
         """
         # make a generator for consistent results (good for testing)
-        generator = torch.Generator("cuda").manual_seed(42)
+        generator = torch.Generator(Utils.get_divice()).manual_seed(42)
         prompt_parts = []
 
         # Determine image type
@@ -90,7 +90,7 @@ class Txt2Img:
 
         # Generate image
         images = pipe(prompt, num_inference_steps=50, generator=generator).images
-        return image[0]
+        return images[0]
 
     @staticmethod
     def test()->Image:
