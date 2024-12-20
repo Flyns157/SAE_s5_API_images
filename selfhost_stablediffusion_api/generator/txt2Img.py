@@ -4,12 +4,13 @@ import random
 from peft import LoraConfig, TaskType
 from PIL import Image  
 from ..utils import Utils
+import os
 
 
 class Txt2Img:
 
     @staticmethod
-    def txt2img_post(prompt: str, guidance_scale: float, num_inference_steps: int, negative_prompt: str | list[str], pipe: StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
+    def txt2img_post(prompt: str = None, guidance_scale: str = "", num_inference_steps: str = "", negative_prompt: str | list[str] = None, pipe: StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgPost (function) : create a post image
 
@@ -19,15 +20,21 @@ class Txt2Img:
         num_inference_steps (int) : image quality
         negative_prompt (str) : object that you don't want
         '''
-        seed = random.randint(1, 100)
-        generator = torch.Generator(
-            Utils.get_divice()).manual_seed(seed)   # type: ignore
-        image = pipe(prompt, generator=generator, guidance_scale=guidance_scale,
-                    num_inference_steps=num_inference_steps, negative_prompt=negative_prompt).images[0]
+        # seed = random.randint(1, 100)
+        # generator = torch.Generator(
+        #     Utils.get_divice()).manual_seed(seed)   # type: ignore
+        # image = pipe(prompt, generator=generator, guidance_scale=guidance_scale,
+        #             num_inference_steps=num_inference_steps, negative_prompt=negative_prompt).images[0]
+        # return image
+        dossier_images = "selfhost_stablediffusion_api\generator\images"
+        numero_image = random.randint(1, 10)
+        nom_image = f"image{numero_image}.png"
+        chemin_image = os.path.join(dossier_images, nom_image)
+        image = Image.open(chemin_image)
         return image
 
     @staticmethod
-    def txt2img_avatar(image_type: str, style: str = None, 
+    def txt2img_avatar(image_type: str = None, style: str = None, 
                         subject: str = None, gender: str = None, hair_color: str = None, 
                         hair_length: str = None, haircut: str = None, nationality: str = None, 
                         eye_color: str = None, animal: str = None, body_color: str = None, 
@@ -63,34 +70,40 @@ class Txt2Img:
         Returns:
         - An image generated based on the given prompt.
         """
-        # make a generator for consistent results (good for testing)
-        generator = torch.Generator(Utils.get_divice()).manual_seed(42)
-        prompt_parts = []
+        # # make a generator for consistent results (good for testing)
+        # generator = torch.Generator(Utils.get_divice()).manual_seed(42)
+        # prompt_parts = []
 
-        # Determine image type
-        if image_type == "painting" and style:
-            prompt_parts.append(f"a painting in {style} style ")
-        else:
-            prompt_parts.append(f"a portrait ")
+        # # Determine image type
+        # if image_type == "painting" and style:
+        #     prompt_parts.append(f"a painting in {style} style ")
+        # else:
+        #     prompt_parts.append(f"a portrait ")
 
-        # Subject-based prompts
-        if subject == "person":
-            prompt_parts.append(
-                f"of a {nationality} {gender} person with {eye_color} eyes and {hair_length}, {hair_color} hair (haircut: {haircut}).")
-        elif subject == "animal":
-            prompt_parts.append(
-                f"of a {height} {body_color} {animal} in a {environment}")
-        elif subject == "landscape":
-            prompt_parts.append(
-                f"of a landscape with a {fav_color} theme, featuring {fav_sport}, a {fav_animal}, inspired by {fav_song}, and elements of {fav_dish}, {fav_job}, and {fav_hero}")
+        # # Subject-based prompts
+        # if subject == "person":
+        #     prompt_parts.append(
+        #         f"of a {nationality} {gender} person with {eye_color} eyes and {hair_length}, {hair_color} hair (haircut: {haircut}).")
+        # elif subject == "animal":
+        #     prompt_parts.append(
+        #         f"of a {height} {body_color} {animal} in a {environment}")
+        # elif subject == "landscape":
+        #     prompt_parts.append(
+        #         f"of a landscape with a {fav_color} theme, featuring {fav_sport}, a {fav_animal}, inspired by {fav_song}, and elements of {fav_dish}, {fav_job}, and {fav_hero}")
 
-        # Combine all parts into one prompt
-        prompt = " ".join(prompt_parts)
-        print(f"Generated prompt: {prompt}")
+        # # Combine all parts into one prompt
+        # prompt = " ".join(prompt_parts)
+        # print(f"Generated prompt: {prompt}")
 
-        # Generate image
-        images = pipe(prompt, num_inference_steps=50, generator=generator).images
-        return images[0]
+        # # Generate image
+        # images = pipe(prompt, num_inference_steps=50, generator=generator).images
+        # return images[0]
+        dossier_images = "selfhost_stablediffusion_api\generator\images"
+        numero_image = random.randint(1, 10)
+        nom_image = f"image{numero_image}.png"
+        chemin_image = os.path.join(dossier_images, nom_image)
+        image = Image.open(chemin_image)
+        return image
 
     @staticmethod
     def test()->Image:

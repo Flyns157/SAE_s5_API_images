@@ -61,8 +61,8 @@ def generate_txt2img():
     #try:
     data = request.json
     prompt = data['prompt']
-    guidance_scale = float(data.get('guidance_scale', 7.5))
-    num_inference_steps = int(data.get('num_inference_steps', 50))
+    guidance_scale = ""
+    num_inference_steps = ""
     negative_prompt = data.get('negative_prompt', "")
 
         # Utilisation de la méthode Txt2Img.txt2ImgPost
