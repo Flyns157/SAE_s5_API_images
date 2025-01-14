@@ -1,4 +1,4 @@
-from selfhost_stablediffusion_api import GenerationAPI
+from . import GenerationAPI
 import argparse
 import sys
 

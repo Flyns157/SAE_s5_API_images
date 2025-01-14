@@ -10,7 +10,7 @@ import os
 class Txt2Img:
 
     @staticmethod
-    def txt2img_post(prompt: str = None, guidance_scale: str = "", num_inference_steps: str = "", negative_prompt: str | list[str] = None, pipe: StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
+    def txt2img_post(prompt: str = None, guidance_scale: float = None, num_inference_steps: str = "", negative_prompt: str | list[str] = None, pipe: StableDiffusionPipeline = Utils.load_pipe(model_name="CompVis/stable-diffusion-v1-4")):
         '''
         txt2ImgPost (function) : create a post image
 
@@ -117,4 +117,4 @@ class Txt2Img:
             "(Optionel) Ajoutez un élément à ne pas avoir sur l'image (negative_prompt) : "))
 
         # Générer et sauvegarder l'image
-        return Txt2Img.txt2ImgPost(prompt, guidance_scale, num_inference_steps, negative_prompt)
+        return Txt2Img.txt2img_post(prompt, guidance_scale, num_inference_steps, negative_prompt)

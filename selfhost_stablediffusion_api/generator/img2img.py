@@ -20,7 +20,7 @@ class Img2Img:
         img2img_pipe = Utils.load_pipe(model_name="stabilityai/stable-diffusion-2-1-base", loader=StableDiffusionImg2ImgPipeline, variant="fp16", use_safetensors=True).to(device_available)
         prompt = "An avatar of a man. Add a sword in his hand"
 
-        from .txt2Img import Txt2Img
+        from .txt2img import Txt2Img
         init_image = Txt2Img.txt2img_post(prompt=prompt)
 
         return init_image, Img2Img.img2img(prompt=prompt, init_image=init_image, strength=1, num_inference_steps=50, pipe=img2img_pipe)
